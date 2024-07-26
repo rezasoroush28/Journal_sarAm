@@ -4,8 +4,8 @@ using TelegramBot.Models;
 
 public interface IJournalService
 {
-    Task<IEnumerable<Journal>> GetAllJournalsAsync();
-    Task<IEnumerable<Journal>> GetJournalsByUserIdAsync(int userId);
+    Task<List<Journal>> GetAllJournalsByUserIdAsync(int userId);
+    Task<Journal> GetJournalByIdAsync(int id);
     Task AddJournalAsync(Journal journal);
     Task UpdateJournalAsync(Journal journal);
     Task DeleteJournalAsync(int id);

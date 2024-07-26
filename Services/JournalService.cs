@@ -1,5 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TelegramBot.Models;
+using TelegramBot;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public class JournalService : IJournalService
 {
@@ -10,16 +13,14 @@ public class JournalService : IJournalService
         _journalRepository = journalRepository;
     }
 
-    public async Task<IEnumerable<Journal>> GetAllJournalsAsync()
+    public async Task<List<Journal>> GetAllJournalsByUserIdAsync(int userId)
     {
-        return await _journalRepository.Table.ToListAsync();
+        return await _journalRepository.TableNoTracking.Where(x => x.UserId == userId).ToListAsync();
     }
 
-    public async Task<IEnumerable<Journal>> GetJournalsByUserIdAsync(int userId)
+    public async Task<Journal> GetJournalByIdAsync(int id)
     {
-        return await _journalRepository.Table
-                                        .Where(j => j.UserId == userId)
-                                        .ToListAsync();
+        return await _journalRepository.GetByIdAsync(id);
     }
 
     public async Task AddJournalAsync(Journal journal)

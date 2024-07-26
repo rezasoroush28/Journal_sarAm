@@ -1,56 +1,57 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using TelegramBotProject.Data;
 
 public class Repository<T> : IRepository<T> where T : class
 {
     private readonly JournalDbContext _context;
-    private DbSet<T> _entities;
+    private DbSet<T> entities;
 
     public Repository(JournalDbContext context)
     {
         _context = context;
-        _entities = context.Set<T>();
+        entities = context.Set<T>();
     }
 
-    public IQueryable<T> Table => _entities;
-
-    public IQueryable<T> TableNoTracking => _entities.AsNoTracking();
-
-    public async Task<T> GetByIdAsync(object id)
+    public async Task<IEnumerable<T>> GetAllAsync()
     {
-        return await _entities.FindAsync(id);
+        return await entities.ToListAsync();
+    }
+
+    public async Task<T> GetByIdAsync(int id)
+    {
+        return await entities.FindAsync(id);
     }
 
     public async Task AddAsync(T entity)
     {
-        if (entity == null)
-            throw new ArgumentNullException(nameof(entity));
-
-        await _entities.AddAsync(entity);
+        await entities.AddAsync(entity);
         await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(T entity)
     {
-        if (entity == null)
-            throw new ArgumentNullException(nameof(entity));
-
-        _entities.Update(entity);
+        entities.Update(entity);
         await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(T entity)
     {
-        if (entity == null)
-            throw new ArgumentNullException(nameof(entity));
-
-        _entities.Remove(entity);
+        entities.Remove(entity);
         await _context.SaveChangesAsync();
     }
 
-    public async Task SaveChangesAsync()
+    public Task<T> GetByIdAsync(object id)
     {
-        await _context.SaveChangesAsync();
+        throw new NotImplementedException();
     }
+
+    public Task SaveChangesAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public IQueryable<T> Table => entities;
+    public IQueryable<T> TableNoTracking => entities.AsNoTracking();
 }
