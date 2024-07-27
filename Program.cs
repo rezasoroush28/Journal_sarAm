@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
+using Telegram.Bot.Polling;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using TelegramBot;
 using TelegramBotProject.Data;
 
@@ -40,6 +43,31 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Telegram Bot Setup
+var botClient = app.Services.GetRequiredService<ITelegramBotClient>();
+
+var cts = new CancellationTokenSource();
+
+ReceiverOptions receiverOptions = new() { AllowedUpdates = Array.Empty<UpdateType>() };
+
+botClient.StartReceiving(
+    async (botClient, update, cancellationToken) =>
+    {
+        if (update.Type == UpdateType.Message && update.Message!.Type == MessageType.Text)
+        {
+            var chatId = update.Message.Chat.Id;
+            await botClient.SendTextMessageAsync(chatId, $"Your Telegram ID is: {chatId}", cancellationToken: cancellationToken);
+        }
+    },
+    HandleErrorAsync,
+    receiverOptions,
+    cancellationToken: cts.Token
+);
+
 app.Run();
 
-
+static Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+{
+    Console.WriteLine(exception);
+    return Task.CompletedTask;
+}
