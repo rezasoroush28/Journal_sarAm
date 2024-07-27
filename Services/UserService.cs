@@ -38,4 +38,9 @@ public class UserService : IUserService
             await _userRepository.DeleteAsync(user);
         }
     }
+    public async Task<User> GetUserByTelegramIdAsync(string telegramId)
+    {
+        var user =  _userRepository.Table.FirstOrDefault<User>(a => a.TelegramId == telegramId);
+        return user;
+    }
 }

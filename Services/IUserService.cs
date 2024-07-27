@@ -4,6 +4,7 @@ using TelegramBot.Models;
 
 public interface IUserService
 {
+    Task<User> GetUserByTelegramIdAsync(string telegramId);
     Task<IEnumerable<User>> GetAllUsersAsync();
     Task<User> GetUserByIdAsync(int id);
     Task AddUserAsync(User user);

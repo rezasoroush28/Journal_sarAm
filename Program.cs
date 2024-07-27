@@ -1,8 +1,17 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Telegram.Bot;
 using TelegramBot;
 using TelegramBotProject.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<BotConfiguration>(builder.Configuration.GetSection("BotConfiguration"));
+builder.Services.AddSingleton<ITelegramBotClient>(provider =>
+{
+    var botConfig = provider.GetRequiredService<IOptions<BotConfiguration>>().Value;
+    return new TelegramBotClient(botConfig.BotToken);
+});
 
 // Add services to the container.
 builder.Services.AddScoped<IUserService, UserService>();
