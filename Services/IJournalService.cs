@@ -9,4 +9,5 @@ public interface IJournalService
     Task AddJournalAsync(Journal journal);
     Task UpdateJournalAsync(Journal journal);
     Task DeleteJournalAsync(int id);
+    Task<Journal> AnalyzeAndSaveJournalAsync(Journal journal);
 }

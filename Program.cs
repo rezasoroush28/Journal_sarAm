@@ -1,15 +1,29 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
-using Telegram.Bot.Polling;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 using TelegramBot;
 using TelegramBotProject.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<BotConfiguration>(builder.Configuration.GetSection("BotConfiguration"));
+
+builder.Services.AddHttpClient<IOpenAIService, OpenAIService>(client =>
+{
+    client.BaseAddress = new Uri("https://api.openai.com/");
+});
+
+// Add your API key here
+string apiKey = builder.Configuration["OpenAI:ApiKey"];
+builder.Services.AddSingleton(new OpenAIService(new HttpClient(), apiKey));
+
+
+builder.Services.Configure<OpenAIConfiguration>(
+    builder.Configuration.GetSection("OpenAI"));
+
+builder.Services.AddSingleton<IOpenAIService, OpenAIService>();
+
+
 builder.Services.AddSingleton<ITelegramBotClient>(provider =>
 {
     var botConfig = provider.GetRequiredService<IOptions<BotConfiguration>>().Value;
@@ -23,6 +37,9 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddControllers();
 builder.Services.AddDbContext<JournalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register the TelegramBotHandler
+builder.Services.AddHostedService<TelegramBotUpdateHandler>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -43,31 +60,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Telegram Bot Setup
-var botClient = app.Services.GetRequiredService<ITelegramBotClient>();
-
-var cts = new CancellationTokenSource();
-
-ReceiverOptions receiverOptions = new() { AllowedUpdates = Array.Empty<UpdateType>() };
-
-botClient.StartReceiving(
-    async (botClient, update, cancellationToken) =>
-    {
-        if (update.Type == UpdateType.Message && update.Message!.Type == MessageType.Text)
-        {
-            var chatId = update.Message.Chat.Id;
-            await botClient.SendTextMessageAsync(chatId, $"Your Telegram ID is: {chatId}", cancellationToken: cancellationToken);
-        }
-    },
-    HandleErrorAsync,
-    receiverOptions,
-    cancellationToken: cts.Token
-);
-
 app.Run();
-
-static Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
-{
-    Console.WriteLine(exception);
-    return Task.CompletedTask;
-}
