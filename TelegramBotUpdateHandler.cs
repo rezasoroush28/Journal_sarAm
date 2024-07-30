@@ -5,6 +5,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Models;
 using Telegram.Bot.Types;
+using User = Telegram.Bot.Types.User;
 
 public class TelegramBotUpdateHandler : BackgroundService
 {
@@ -63,7 +64,7 @@ public class TelegramBotUpdateHandler : BackgroundService
                 else if (_waitingForJournal.TryGetValue(chatId, out var waitingForName) && !waitingForName)
                 {
                     // User is sending their name
-                    var newUser = new User
+                    var newUser = new TelegramBot.Models.User
                     {
                         TelegramId = chatId.ToString(),
                         Name = messageText

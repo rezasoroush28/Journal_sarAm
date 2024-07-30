@@ -6,28 +6,23 @@ using TelegramBotProject.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Bot settings
 builder.Services.Configure<BotConfiguration>(builder.Configuration.GetSection("BotConfiguration"));
-
-builder.Services.AddHttpClient<IOpenAIService, OpenAIService>(client =>
-{
-    client.BaseAddress = new Uri("https://api.openai.com/");
-});
-
-// Add your API key here
-string apiKey = builder.Configuration["OpenAI:ApiKey"];
-builder.Services.AddSingleton(new OpenAIService(new HttpClient(), apiKey));
-
-
-builder.Services.Configure<OpenAIConfiguration>(
-    builder.Configuration.GetSection("OpenAI"));
-
-builder.Services.AddSingleton<IOpenAIService, OpenAIService>();
-
-
 builder.Services.AddSingleton<ITelegramBotClient>(provider =>
 {
     var botConfig = provider.GetRequiredService<IOptions<BotConfiguration>>().Value;
     return new TelegramBotClient(botConfig.BotToken);
+});
+
+// Configure OpenAI settings
+builder.Services.Configure<OpenAIConfiguration>(builder.Configuration.GetSection("OpenAI"));
+
+// Register OpenAIService with HttpClient
+builder.Services.AddHttpClient<IOpenAIService, OpenAIService>((sp, client) =>
+{
+    var config = sp.GetRequiredService<IOptions<OpenAIConfiguration>>().Value;
+    client.BaseAddress = new Uri("https://api.openai.com/");
+    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {config.ApiKey}");
 });
 
 // Add services to the container.
