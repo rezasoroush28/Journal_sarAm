@@ -14,18 +14,30 @@ public class OpenAIService : IOpenAIService
     {
         var request = new
         {
-            model = "gpt-4",
+            model = "gpt-4o",
             messages = new[]
             {
-                new { role = "system", content = "Translate the following Persian journal to English, provide an emotional analysis in Persian, and extract a topic in Persian in JSON format" },
+                new { role = "system", content = "Analyze the following Persian journal entry " +
+                "and provide an  emotional analysis in persian , " +
+                "topic in Persian, and a polarity score ranging from -1 to " +
+                "1. Return the data as a JSON object with the keys: 'emotional_analysis', 'topic', and 'polarity' " +
+                " Ensure that the response content only includes these three keys" },
+
                 new { role = "user", content = prompt }
             }
         };
 
         var requestContent = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync("v1/chat/completions", requestContent);
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions")
+        {
+            Content = requestContent
+        };
 
-        response.EnsureSuccessStatusCode();
+        // Ensure the Authorization header is correctly set
+        requestMessage.Headers.Add("Authorization", $"Bearer sk-None-qY3Bx26rSGBzibuKkF0sT3BlbkFJQvOoeMLc63e2TMHQqmI2");
+
+        var response = await _httpClient.SendAsync(requestMessage);
+        response.EnsureSuccessStatusCode(); // Throws exception if the status code is not success
         var responseContent = await response.Content.ReadAsStringAsync();
 
         return responseContent;

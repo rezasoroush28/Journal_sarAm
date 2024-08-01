@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TelegramBotProject.Data;
 
@@ -11,9 +12,11 @@ using TelegramBotProject.Data;
 namespace TelegramBot.Migrations
 {
     [DbContext(typeof(JournalDbContext))]
-    partial class JournalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240731225057_AddRawJsonToJournal")]
+    partial class AddRawJsonToJournal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,9 +37,11 @@ namespace TelegramBot.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("EmotionalAnalysis")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("JournalTopic")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PersianJournal")
@@ -47,9 +52,11 @@ namespace TelegramBot.Migrations
                         .HasColumnType("float");
 
                     b.Property<string>("RawJson")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Translation")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
